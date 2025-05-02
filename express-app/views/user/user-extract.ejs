@@ -30,12 +30,45 @@
     <div class="header">
       <h2>Upload Image Here To Scan</h2>
       <div class="server-message"></div>
+      <button class="camera-btn" id="camera-open-btn" onclick="openCamera();">Open Camera</button>
     </div>
 
     <div class="input-div">
       <p>Drag and Drop Images or <span class="browse">Browse</span></p>
       <input type="file" class="file" accept="image/png, image/jpeg, image/jpg" />
     </div>
+
+    <div class="camera-div">
+      <div class="container">
+        <div class="camera-container">
+          <video class="camera-video" id="camera-video" width="400" height="300" autoplay></video>
+          <div class="camera-buttons">
+            <button class="camera-btn" id="camera-capture-btn" onclick="captureImage()">Capture Image</button>
+          <button class="camera-btn" id="camera-cancel-capture" onclick="closeCamera()">Close Camera</button>
+          </div>
+        </div>
+
+        <!-- Preview Modal -->
+        <div class="camera-modal" id="camera-modal">
+          <div class="camera-modal-content">
+            <img class="camera-preview-image" id="camera-preview-image" src="" alt="Captured Image">
+            <div class="camera-buttons">
+              <button class="camera-save-btn" id="camera-save-btn">Upload Image</button>
+              <button class="camera-cancel-btn" id="camera-cancel-btn">Cancel Upload</button>
+            </div>
+          </div>
+        </div>
+
+
+
+      </div>
+    </div>
+
+    <!-- Video element to show camera feed -->
+
+
+    <!-- Hidden canvas to capture the image -->
+    <canvas class="camera-canvas" id="camera-canvas" style="display:none;"></canvas>
 
     <div class="image-divs">
       <form id="queued-form">
@@ -691,6 +724,115 @@
         console.error("Failed to fetch drug information:", error);
         alert("Failed to retrieve drug information. Please try again.");
       }
+    }
+
+    // camera
+
+    const cameraVideo = document.getElementById('camera-video');
+    const cameraCanvas = document.getElementById('camera-canvas');
+    const cameraCtx = cameraCanvas.getContext('2d');
+    const cameraModal = document.getElementById('camera-modal');
+    const cameraPreviewImage = document.getElementById('camera-preview-image');
+    const cameraCaptureBtn = document.getElementById('camera-capture-btn');
+    const cameraDiv = document.querySelector('.camera-div');
+    const cameraContainer = document.querySelector('.camera-container');
+
+    const openCamera = async () => {
+
+      cameraDiv.classList.add('active');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      cameraVideo.srcObject = stream;
+
+      // Show the capture button when the camera feed is ready
+      // cameraCaptureBtn.style.display = 'inline-block';
+
+
+    }
+
+    const closeCamera = async () => {
+      const stream = cameraVideo.srcObject;
+      if (stream) {
+        const tracks = stream.getTracks();
+        tracks.forEach(track => track.stop());
+      }
+      cameraVideo.srcObject = null;
+      cameraDiv.classList.remove('active');
+    }
+
+    // Open Camera Button functionality
+    // document.getElementById('camera-open-btn').addEventListener('click', async function () {
+    //   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    //   cameraVideo.srcObject = stream;
+
+    //   // Show the capture button when the camera feed is ready
+    //   // cameraCaptureBtn.style.display = 'inline-block';
+
+    //   cameraDiv.addclassList.add('active');
+    // });
+
+    // Capture Image from Video and Show Modal
+
+    const captureImage = async () => {
+      cameraCanvas.width = cameraVideo.videoWidth;
+      cameraCanvas.height = cameraVideo.videoHeight;
+      cameraCtx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+      const cameraImageUrl = cameraCanvas.toDataURL('image/png');
+      showPreviewModal(cameraImageUrl);
+      cameraContainer.classList.add('hide'); // Hide camera after capture
+      cameraModal.classList.add('active'); // Show modal with preview
+    }
+
+    // cameraCaptureBtn.addEventListener('click', function () {
+    //   cameraCanvas.width = cameraVideo.videoWidth;
+    //   cameraCanvas.height = cameraVideo.videoHeight;
+    //   cameraCtx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+    //   const cameraImageUrl = cameraCanvas.toDataURL('image/png');
+    //   showPreviewModal(cameraImageUrl);
+    // });
+
+    // Display Modal with Image Preview
+    function showPreviewModal(cameraImageUrl) {
+      cameraPreviewImage.src = cameraImageUrl;
+      cameraModal.classList.add('active');
+
+      // Event listener to save image
+      document.getElementById('camera-save-btn').addEventListener('click', function () {
+        saveImageToDatabase(cameraImageUrl);
+      });
+
+      // Event listener to close the modal
+      document.getElementById('camera-cancel-btn').addEventListener('click', function () {
+        // cameraModal.style.display = 'none';
+        cameraModal.classList.remove('active');
+        cameraContainer.classList.remove('hide'); // Show camera again
+      });
+    }
+
+    // Save Image to Backend
+    function saveImageToDatabase(cameraImageUrl) {
+      const cameraUsername = "user_example";  // Replace with dynamic data
+      const cameraEmail = "user@example.com"; // Replace with dynamic data
+      const cameraImageType = 'image/png'; // Or dynamically set based on image type
+
+      fetch('/save-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image: cameraImageUrl,
+          username: cameraUsername,
+          email: cameraEmail,
+          imageType: cameraImageType
+        }),
+      })
+        .then(response => response.json())
+        .then(data => {
+
+          cameraDiv.classList.remove('active'); // Hide camera div
+          location.reload(); // Reload the page to see the new image
+        })
+        .catch(error => console.error('Error saving image:', error));
     }
 
 

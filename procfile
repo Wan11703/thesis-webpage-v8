@@ -1,0 +1,4 @@
+web-flask: gunicorn bridge_api_flask.start_flask:app
+web-fastapi: uvicorn bridge_api_fastapi.api_server:app --host=0.0.0.0 --port=8000
+worker-node: npm run server
+web-google-vision: uvicorn ocr_ner_api.ocr.googleVision:app --host=0.0.0.0 --port=8001
