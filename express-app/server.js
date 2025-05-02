@@ -12,8 +12,33 @@ const unlinkFile = util.promisify(fs.unlink);
 
 // const multerS3 = require("multer-s3-v2");
 // const { s3, getImageStream, deleteImage } = require("./s3.js");
-const { dbConnection } = require("./db.js");
-require("dotenv").config();
+// const { dbConnection } = require("./db.js");
+// require("dotenv").config();
+
+DB_HOST = yamabiko.proxy.rlwy.net
+DB_USER = root
+DB_PASSWORD = pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB
+DB_NAME = user_db
+DB_PORT = 35633
+
+const mysql = require('mysql2');
+var colors = require('colors');
+// require("dotenv").config();
+
+const dbConnection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+});
+
+dbConnection.connect(function(err){
+    if(!err){
+        console.log("Connected to the MySQL server!".underline.cyan);
+    } else{
+        console.error("Error connecting: " + err.stack);
+    }
+});
 
 const session = require("express-session");
 
