@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/user/user-extract.css" />
+  <title>MedExtract</title>
+</head>
+
+<body>
+  <nav class="user-navbar">
+    <div class="container">
+      <div class="logo">
+        <h1><a href="#">MedExtract</a></h1>
+      </div>
+
+      <ul class="nav">
+        <li><a href="/user-extract">Extract</a></li>
+        <li><a href="/user-search">Search</a></li>
+        <li><a href="/user-settings">Settings</a></li>
+        <li><a href="/logout" onclick="confirmLogout()">Log Out</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="app">
+
+    <div class="header">
+      <h2>Upload Image Here To Scan</h2>
+      <div class="server-message"></div>
+    </div>
+
+    <div class="input-div">
+      <p>Drag and Drop Images or <span class="browse">Browse</span></p>
+      <input type="file" class="file" accept="image/png, image/jpeg, image/jpg" />
+    </div>
+
+    <div class="image-divs">
+      <form id="queued-form">
+        <div class="header">
+          <h3>Images Preview</h3>
+          <button type="submit">Upload</button>
+        </div>
+
+        <div class="queued-div"></div>
+      </form>
+
+      <form id="saved-form">
+        <div class="header">
+          <h3>Uploaded Image</h3>
+          <div class="buttons">
+            <button id="scan" type="button" onclick="ScanImage()">Scan</button>
+            <!-- <div id="scan">Scan</div> -->
+
+            <button id="delete" type="submit">Delete</button>
+          </div>
+        </div>
+
+        <div class="saved-div"></div>
+      </form>
+    </div>
+  </main>
+
+  <div id="modal_container" class="modal-container">
+    <div class="modal">
+      <h1 id="modal-title">Extraction Results</h1>
+
+      <div class="loader active">
+        <div class="container">
+          <div class="loading">
+            <div class="text">Generating medical insight... Please wait.</div>
+            <!-- <div class="percent"> 100%</div> -->
+            <div class="progress-bar">
+              <div class="progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="selector"></div>
+
+      <div class="tabs">
+
+        <div class="container">
+          <div class="tab-container">
+            <div class="tab-box">
+              <button class="tab-btn active">Medication Details</button>
+              <button class="tab-btn">Drug Interactions</button>
+              <button class="tab-btn">Dosage Guidelines</button>
+              <button class="tab-btn">Side Effects</button>
+              <button class="tab-btn">Drug Prices</button>
+              <div class="line"></div>
+            </div>
+            <div class="content-box">
+              <div class="content active" id="drug_information">
+                <p>
+                </p>
+              </div>
+
+              <div class="content" id="interactions">
+                <p>
+                </p>
+              </div>
+
+              <div class="content" id="indications">
+                <p>
+                </p>
+              </div>
+
+              <div class="content" id="side_effects">
+                <p>
+                </p>
+              </div>
+
+              <div class="content" id="price">
+                <p>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button id="back">Back</button>
+        <button id="close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="f-1">
+        <h2>MedExtract</h2>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Adipisci,
+          id aspernatur itaque cumque vitae odit sint eligendi nam libero
+          voluptate magni aperiam, veniam ullam tenetur quidem nostrum enim
+          eos a.
+        </p>
+      </div>
+
+      <div class="f-2">
+        <div>
+          <h2>Links</h2>
+          <ul class="nav">
+            <li><a href="#">Extract</a></li>
+            <li><a href="#">Search</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="/logout" onclick="confirmLogout()">Log Out</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="f-3">
+        <h2>Contacts</h2>
+        <div class="contacts">
+          <div>
+            <img src="/flaticons/user/location.png" /> &nbsp;
+            <p>
+              University of The East Caloocan, 105 Samson Rd, Caloocan, Metro
+              Manila
+            </p>
+          </div>
+          <div>
+            <img src="/flaticons/user/email.png" /> &nbsp;
+            <p>nogot.markvincent@ue.edu.ph</p>
+          </div>
+          <div>
+            <img src="/flaticons/user/call.png" /> &nbsp;
+            <p>09991624156</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    let queuedImagesArray = [];
+    savedForm = document.querySelector("#saved-form");
+    // deleteBtn = document.querySelector("#delete");
+    queuedForm = document.querySelector("#queued-form");
+    savedDiv = document.querySelector(".saved-div");
+    queuedDiv = document.querySelector(".queued-div");
+    inputDiv = document.querySelector(".input-div");
+    input = document.querySelector(".input-div input");
+    serverMessage = document.querySelector(".server-message");
+    savedImages = JSON.parse('<%- JSON.stringify(images) %>');
+
+    deleteImages = [];
+
+    function confirmLogout() {
+      if (confirm("Are you sure you want to log out?")) {
+        window.location.href = "/logout";
+      }
+    }
+
+
+    // SAVED IN DATABASE IMAGES
+
+
+
+    if (savedImages) {
+      displayedSavedImages()
+    }
+
+    function displayedSavedImages() {
+      let image = savedImages[0]; // Only care about one image
+
+      if (image && image.user_id) {
+        savedDiv.innerHTML = `
+      <div class="image">
+        <img id="prescrip-img" src="http://localhost:3000/user-image/${image.user_id}" alt="Saved Image">
+      </div>`;
+      } else {
+        savedDiv.innerHTML = ""; // Nothing to show
+      }
+    }
+
+
+
+
+
+    // function deleteSavedImage(index) { // new 
+    //   deleteImages.push(savedImages[index]);
+    //   savedImages.splice(index, 1);
+    //   displayedSavedImages();
+    // }
+
+    savedForm.addEventListener("submit", (e) => { // new
+      e.preventDefault();
+      deleteImagesFromServer();
+    });
+
+    function deleteImagesFromServer() { // new
+      fetch("delete", {
+        method: "PUT",
+        headers: {
+          "Accept": "application/json, text/plain, */*",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ deleteImages })
+      })
+        .then(response => {
+          if (response.status !== 200) throw Error(response.statusText)
+          deleteImages = []
+          serverMessage.innerHTML = response.statusText
+          serverMessage.style.cssText = "background-color: #D4EDDA; color: #1B5E20;"
+          location.reload();
+        })
+
+        .catch(error => {
+          serverMessage.innerHTML = error
+          serverMessage.style.cssText = "background-color: #F8D7DA; color: #B71C1C;"
+        });
+    }
+
+    // QUEUED IN FRONTEND IMAGES
+
+    input.addEventListener("change", () => {
+      const files = input.files;
+      if (files.length) {
+        // Only keep the first file
+        queuedImagesArray = [files[0]];
+      }
+      queuedForm.reset();
+      displayQueuedImages();
+    });
+
+    inputDiv.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const files = e.dataTransfer.files;
+
+      for (let i = 0; i < files.length; i++) {
+        if (!files[i].type.match("image")) continue;
+
+        // Only allow the first image to be added
+        queuedImagesArray = [files[i]];
+        break;
+      }
+
+      displayQueuedImages();
+    });
+
+
+    function displayQueuedImages() {
+      let images = "";
+      queuedImagesArray.forEach((image, index) => {
+        images += `<div class="image">
+                   <img src="${URL.createObjectURL(image)}" alt="image">
+                   </div>`
+      })
+      queuedDiv.innerHTML = images;
+    }
+
+    queuedForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      sendQueuedImagesToServer();
+    })
+
+    function sendQueuedImagesToServer() {
+      const formData = new FormData(queuedForm);
+
+      queuedImagesArray.forEach((image, index) => {
+        formData.append(`file[${index}]`, image)
+      })
+
+      fetch("upload", { method: "POST", body: formData })
+
+        .then(response => {
+          if (response.status !== 200) throw Error(response.statusText)
+          location.reload()
+        })
+
+        .catch(error => {
+          serverMessage.innerHTML = error
+          serverMessage.style.cssText = "background-color: #F8D7DA; color: #B71C1C;"
+        });
+    }
+
+    // tabs
+
+    const tabs = document.querySelectorAll(".tab-btn");
+    const contents = document.querySelectorAll(".content");
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", (e) => {
+        tabs.forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        tab.classList.add("active");
+        var line = document.querySelector(".line");
+        line.style.width = e.target.offsetWidth + "px";
+        line.style.left = e.target.offsetLeft + "px";
+
+        contents.forEach((content) => {
+          content.classList.remove("active");
+        });
+        contents[index].classList.add("active");
+      });
+    });
+
+    // modal
+
+
+    const modal_container = document.getElementById("modal_container");
+    const close = document.getElementById("close");
+    const back = document.getElementById("back");
+
+
+    const modalTitle = document.querySelector("#modal-title");
+    const scanButton = document.getElementById("scan"); // Scan button
+    // const open = document.getElementById("open");
+
+
+    const tabActive = document.querySelector(".tabs");
+    const loaderActive = document.querySelector(".loader");
+    const selectorDiv = document.querySelector(".selector");
+
+
+    const drug_information = document.querySelector("#drug_information");
+    const interactions = document.querySelector("#interactions");
+    const indications = document.querySelector("#indications");
+    const side_effects = document.querySelector("#side_effects");
+    const price = document.querySelector("#price");
+
+    let userSelectedMedicine = false;
+
+
+    let loading;
+
+    const userId = "<%= userId %>";
+
+
+
+    // open.addEventListener('click', () => {
+
+    // userSelectedMedicine = false; // reset selection
+
+    // modal_container.classList.add('show');
+
+    // // Reset progress bar and start animation
+    // count = 0;
+    // per = 0;
+    // progress.style.width = "0px"; // Reset progress bar width
+    // loading = setInterval(animate, 10); // Start the animation
+    // })
+
+    const ScanImage = async () => {
+      userSelectedMedicine = false; // reset selection
+
+      modal_container.classList.add('show');
+
+      // Reset progress bar and start animation
+      count = 0;
+      per = 0;
+      progress.style.width = "0px"; // Reset progress bar width
+      loading = setInterval(animate, 100); // Start the animation
+
+      const imageUrl = "http://localhost:3000/api/image-proxy/{user_id}";
+      console.log("Image URL:", imageUrl); console.log("User ID:", userId);
+
+      console.log("Image URL:", imageUrl); // Log the image URL
+      console.log("User ID:", userId); // Log the user ID
+
+      // fetchExtractedMedicines();
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/api/process-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Pass session_id in the Authorization header
+          },
+          body: JSON.stringify({ image_url: imageUrl, user_id: userId }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to process the image");
+        }
+
+        const data = await response.json();
+        console.log("Processed Image Results:", data);
+
+
+
+
+        renderMedicineList(data.medicineArray || []);
+      } catch (error) {
+        console.error("Error processing the image:", error);
+      }
+    };
+
+
+    back.addEventListener('click', () => {
+      clearInterval(loading); // Stop the interval
+      count = 0;
+      per = 0;
+      progress.style.width = "0px";
+
+      loaderActive.classList.remove("active");
+      tabActive.classList.remove("active");
+      back.classList.remove("active");
+      // saveBtn.classList.remove("active");
+
+      selectorDiv.classList.add("active");
+      modalTitle.textContent = "Extraction Results";
+    });
+
+    close.addEventListener('click', () => {
+
+      userSelectedMedicine = false; // reset selection
+      modal_container.classList.remove('show');
+
+      // Stop and reset the animation
+      clearInterval(loading); // Stop the interval
+      count = 0;
+      per = 0;
+      progress.style.width = "0px"; // Reset progress bar width
+
+      loaderActive.classList.add("active");
+      tabActive.classList.remove("active");
+      selectorDiv.classList.remove("active");
+      // saveBtn.classList.remove("active");
+      back.classList.remove("active");
+      modalTitle.textContent = "Extraction Results";
+    });
+
+    // progress bar
+
+    var progress = document.querySelector(".progress");
+    var text = document.querySelector(".text");
+
+    var count = 0; // Start at 0%
+    var per = 0;   // Start at 0px
+
+    // var loading = setInterval(animate, 50);
+
+    function animate() {
+      if ((count == 100) & (per == 600)) {
+        text.classList.remove("text-blink");
+        loaderActive.classList.remove("active");
+
+        // ✅ Only show selector if user hasn't selected yet
+        if (!userSelectedMedicine) {
+          selectorDiv.classList.add("active");
+        }
+
+        text.innerHTML = "";
+
+      } else {
+        text.innerHTML = "Scanning Image... Please wait.";
+        text.classList.add("text-blink");
+        per = per + 6;
+        count = count + 1;
+        progress.style.width = per + "px";
+      }
+    }
+
+    function animate2() {
+      if ((count == 100) & (per == 600)) {
+        text.classList.remove("text-blink");
+        loaderActive.classList.remove("active");
+        tabActive.classList.add("active");
+        back.classList.add("active");
+        // saveBtn.classList.add("active");
+        text.innerHTML = "";
+
+
+      } else {
+        text.innerHTML = "Generating medical insight... Please wait.";
+        text.classList.add("text-blink");
+        per = per + 6;
+        count = count + 1;
+        progress.style.width = per + "px";
+      }
+    }
+
+
+    // selector
+
+    // Initialize with extracted medicine names passed from the backend
+    // Initialize with extracted medicine names passed from the backend
+
+    // Placeholder for backend injection
+    // Placeholder for backend injection
+    // Fetch the extracted drug names from the backend
+
+    // Fetch the extracted medicine names from the FastAPI endpoint
+    // Fetch the extracted medicine names from the FastAPI endpoint
+    async function fetchExtractedMedicines() {
+      try {
+        const response = await fetch("http://127.0.0.1:8001/process-image", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: "<%= userId %>" }), // Pass the user ID dynamically
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch extracted medicines");
+        }
+        const data = await response.json();
+        const medicineArray = data.medicineArray || [];
+        const rawText = data.raw_text;
+        console.log("✅ Raw Text:", rawText);
+        sendRawTextToBackend(rawText);
+        console.log("✅ Extracted Medicines:", medicineArray);
+
+        // Render the medicine list in the UI
+        renderMedicineList(medicineArray);
+      } catch (error) {
+        console.error("Error fetching extracted medicines:", error);
+      }
+    }
+
+    // Call the function to fetch and display the medicines
+    // fetchExtractedMedicines();
+
+    async function sendRawTextToBackend(rawText) {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/process-raw-text", { // Update URL as needed
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ raw_text: rawText }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log("Response from backend:", data);
+
+        // Handle the response (e.g., update the UI with drug information)
+        if (data.success) {
+          console.log("Raw text successfully processed!");
+        } else {
+          console.log("Failed to process raw text.");
+        }
+      } catch (error) {
+        console.error("Error sending raw text to backend:", error);
+        alert("An error occurred while sending raw text to the backend.");
+      }
+    }
+
+
+    function renderMedicineList(medicines) {
+      // Clear current list
+      const selectorDiv = document.querySelector(".selector");
+      selectorDiv.innerHTML = "";
+
+      // Create list
+      const ul = document.createElement("ul");
+      ul.classList.add("medicine-list");
+
+      medicines.forEach((med) => {
+        const li = document.createElement("li");
+        li.textContent = med;
+        li.classList.add("medicine-item");
+        li.onclick = () => {
+          openMedicineModal(med);
+          selectorDiv.classList.remove("active");
+          
+        } // Attach modal logic
+        ul.appendChild(li);
+      });
+
+      selectorDiv.appendChild(ul);
+    }
+
+    // Listen for real-time updates using SSE
+    const eventSource = new EventSource("http://127.0.0.1:8000/api/stream-medicines");
+
+    eventSource.onmessage = (event) => {
+      const medicines = JSON.parse(event.data);
+      console.log("Real-time update:", medicines);
+      renderMedicineList(medicines);
+    };
+
+    eventSource.onerror = (error) => {
+      console.error("Error with SSE connection:", error);
+    };
+
+
+
+
+    async function openMedicineModal(medicineName) {
+
+      // Stop and reset the animation
+      clearInterval(loading); // Stop the interval
+      count = 0;
+      per = 0;
+      progress.style.width = "0px"; // Reset progress bar width
+
+      // Reset progress bar and start animation
+      count = 0;
+      per = 0;
+      progress.style.width = "0px"; // Reset progress bar width
+      loading = setInterval(animate2, 100); // Start the animation
+      loaderActive.classList.add("active");
+
+      selectorDiv.classList.remove("active");
+      modalTitle.textContent = `${medicineName} Medical Insights`;
+
+      
+      
+      console.log("Selected Medicine:", medicineName);
+      //userSelectedMedicine = true; // User made a selection
+
+      // Fetch drug information from the API
+      try {
+        const response = await fetch("http://127.0.0.1:5000/get-drug-info", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ drug_name: medicineName }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Update modal content with the response from the backend
+        if (data.error) {
+          drug_information.textContent = "";
+          interactions.textContent = "";
+          indications.textContent = "";
+          side_effects.textContent = "";
+          price.textContent = "";
+        } else {
+          drug_information.textContent = data.drug_information || "No details available.";
+          interactions.textContent = data.interaction || "No interactions available.";
+          indications.textContent = data.indication || "No indications available.";
+          side_effects.textContent = data.side_effects || "No side effects available.";
+          price.textContent = data.price || "No price information available.";
+        }
+
+        // Show the modal
+        // tabActive.classList.add("active");
+
+       
+      } catch (error) {
+        console.error("Failed to fetch drug information:", error);
+        alert("Failed to retrieve drug information. Please try again.");
+      }
+    }
+
+
+
+
+
+
+
+  </script>
+
+</body>
+
+
+
+</html>

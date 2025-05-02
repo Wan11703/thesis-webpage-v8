@@ -1,0 +1,71 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start Flask Server-SEARCH",
+            "type": "shell",
+            "command": "C:\\Users\\Mark\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "args": [
+                "C:\\Users\\Mark\\OneDrive\\Desktop\\thesis-webpage\\bridge_api_flask\\start_flask.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "Start FastAPI Server",
+            "type": "shell",
+            "command": "C:\\Users\\Mark\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "args": [
+                "C:\\Users\\Mark\\OneDrive\\Desktop\\thesis-webpage\\bridge_api_fastapi\\api_server.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        {
+            "label": "Start Node Server",
+            "type": "shell",
+            "command": "npm",
+            "args": ["run", "server"],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "options": {
+                "cwd": "C:\\Users\\Mark\\OneDrive\\Desktop\\thesis-webpage\\express-app" // Set the correct working directory
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        },
+        
+        {
+            "label": "Start Google Vision Server",
+            "type": "shell",
+            "command": "C:\\Users\\Mark\\AppData\\Local\\Programs\\Python\\Python312\\python.exe",
+            "args": [
+                "C:\\Users\\Mark\\OneDrive\\Desktop\\thesis-webpage\\ocr_ner_api\\ocr\\googleVision.py"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "runOptions": {
+                "runOn": "folderOpen"
+            }
+        }
+    ]
+}
