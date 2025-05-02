@@ -18,16 +18,16 @@ const unlinkFile = util.promisify(fs.unlink);
 const mysql = require('mysql2');
 var colors = require('colors');
 
-const dbHost = process.env.DB_HOST;
-const dbUser = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-const dbName = process.env.DB_NAME;
+// const dbHost = process.env.DB_HOST;
+// const dbUser = process.env.DB_USER;
+// const dbPassword = process.env.DB_PASSWORD;
+// const dbName = process.env.DB_NAME;
 
 const dbConnection = mysql.createConnection({
-    host: dbHost,
-    user: dbUser,
-    password: dbPassword,
-    database: dbName
+    host: yamabiko.proxy.rlwy.net,
+    user: root,
+    password: pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB,
+    database: user_db
 });
 
 dbConnection.connect((err) => {
@@ -55,6 +55,8 @@ const upload = multer({
 }).single("file[0]");
 
 const formUpload = multer();
+
+
 
 function checkFileType(file, cb) {
     const fileTypes = /jpeg|png|jpg/;
