@@ -27,7 +27,9 @@ const dbConnection = mysql.createConnection({
     host: "mysql-production-b148.up.railway.app",
     user: "root",
     password: "pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB",
-    database: "user_db"
+    database: "user_db",
+    port: 35633,                      // Ensure this port is correct
+    connectTimeout: 30000
 });
 
 dbConnection.connect((err) => {
