@@ -12,33 +12,8 @@ const unlinkFile = util.promisify(fs.unlink);
 
 // const multerS3 = require("multer-s3-v2");
 // const { s3, getImageStream, deleteImage } = require("./s3.js");
-// const { dbConnection } = require("./db.js");
-// require("dotenv").config();
-
-const mysql = require('mysql2');
-var colors = require('colors');
-
-// const dbHost = process.env.DB_HOST;
-// const dbUser = process.env.DB_USER;
-// const dbPassword = process.env.DB_PASSWORD;
-// const dbName = process.env.DB_NAME;
-
-const dbConnection = mysql.createConnection({
-    host: "mysql-production-b148.up.railway.app",
-    user: "root",
-    password: "pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB",
-    database: "user_db",
-    port: 35633,                      // Ensure this port is correct
-    connectTimeout: 30000
-});
-
-dbConnection.connect((err) => {
-    if(!err){
-        console.log("Connected to the MySQL server!".underline.cyan);
-    } else{
-        console.error("Error connecting: " + err.stack);
-    }
-});
+const { dbConnection } = require("./db.js");
+require("dotenv").config();
 
 const session = require("express-session");
 
@@ -58,8 +33,6 @@ const upload = multer({
 
 const formUpload = multer();
 
-
-
 function checkFileType(file, cb) {
     const fileTypes = /jpeg|png|jpg/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
@@ -72,8 +45,8 @@ function checkFileType(file, cb) {
     }
 }
 
-// const port = 3000;
-const port = process.env.PORT || 3000;
+const port = 3000;
+// cons port = process.env.PORT || 3000;
 
 const app = express();
 
@@ -144,7 +117,6 @@ app.get("/user-settings", (req, res) => {
 // });
 
 const cors = require('cors');
-const { constants } = require("buffer");
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
@@ -317,8 +289,6 @@ function saveImagesInDB(images) {
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-
 
 // function deleteImagesFromS3(images) {
 //     for (let i = 0; i < images.length; i++) {
@@ -630,10 +600,3 @@ function saveUserInDB(userData, res) {
         });
     });
 }
-
-
-
-
-
-
-
