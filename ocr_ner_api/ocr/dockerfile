@@ -1,0 +1,16 @@
+FROM python:3.9-slim
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the Google Vision app files
+COPY . /app
+
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Expose the port Google Vision will run on
+EXPOSE 8001
+
+# Command to run the Google Vision app
+CMD ["uvicorn", "ocr_ner_api.ocr.googleVision:app", "--host=0.0.0.0", "--port=8001"]

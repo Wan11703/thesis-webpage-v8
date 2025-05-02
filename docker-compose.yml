@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  web-flask:
+    build:
+      context: ./bridge_api_flask
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+
+  web-fastapi:
+    build:
+      context: ./bridge_api_fastapi
+    ports:
+      - "8000:8000"
+
+  worker-node:
+    build:
+      context: ./express-app
+    ports:
+      - "3000:3000"
+
+  web-google-vision:
+    build:
+      context: ./ocr_ner_api
+    ports:
+      - "8001:8001"
