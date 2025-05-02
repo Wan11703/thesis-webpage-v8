@@ -24,10 +24,10 @@ var colors = require('colors');
 // const dbName = process.env.DB_NAME;
 
 const dbConnection = mysql.createConnection({
-    host: yamabiko.proxy.rlwy.net,
-    user: root,
-    password: pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB,
-    database: user_db
+    host: "yamabiko.proxy.rlwy.net",
+    user: "root",
+    password: "pGoOvZHmdBJWkbxEjyihXSaYKpluMOhB",
+    database: "user_db"
 });
 
 dbConnection.connect((err) => {
