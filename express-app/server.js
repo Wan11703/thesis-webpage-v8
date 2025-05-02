@@ -15,6 +15,29 @@ const unlinkFile = util.promisify(fs.unlink);
 // const { dbConnection } = require("./db.js");
 // require("dotenv").config();
 
+const mysql = require('mysql2');
+var colors = require('colors');
+
+const dbHost = process.env.DB_HOST;
+const dbUser = process.env.DB_USER;
+const dbPassword = process.env.DB_PASSWORD;
+const dbName = process.env.DB_NAME;
+
+const dbConnection = mysql.createConnection({
+    host: dbHost,
+    user: dbUser,
+    password: dbPassword,
+    database: dbName
+});
+
+dbConnection.connect((err) => {
+    if(!err){
+        console.log("Connected to the MySQL server!".underline.cyan);
+    } else{
+        console.error("Error connecting: " + err.stack);
+    }
+});
+
 const session = require("express-session");
 
 const storage = multer.memoryStorage();
@@ -45,8 +68,8 @@ function checkFileType(file, cb) {
     }
 }
 
-const port = 3000;
-// cons port = process.env.PORT || 3000;
+// const port = 3000;
+const port = process.env.PORT || 3000;
 
 const app = express();
 
@@ -117,6 +140,7 @@ app.get("/user-settings", (req, res) => {
 // });
 
 const cors = require('cors');
+const { constants } = require("buffer");
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true
@@ -289,6 +313,8 @@ function saveImagesInDB(images) {
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
+
+
 
 // function deleteImagesFromS3(images) {
 //     for (let i = 0; i < images.length; i++) {
